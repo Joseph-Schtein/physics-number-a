@@ -98,12 +98,6 @@ using namespace ariel;
                     }
                 } 
             }
-            for(unsigned int i = 0; i < convertion.size(); i++){
-                for(unsigned int j = 0; j < convertion.at(i).size(); j++){
-                    cout << convertion.at(i).at(j).first << " " << convertion.at(i).at(j).second << endl;
-                }    
-            }
-
         }
         myfile.close();
     }
@@ -140,7 +134,7 @@ using namespace ariel;
                 return i;
             }
 
-            else if( i+1 == mesurementTypes.size() && ((mine && !his) || (!mine && his))){
+            else if(((mine && !his) || (!mine && his))){
                 throw std::invalid_argument("Units do not match - [" + otherMesure + "] cannot be converted to ["+myMeasure+"]");
             }
 
@@ -481,7 +475,6 @@ using namespace ariel;
         return *this;
     }
 
-    NumberWithUnits ariel::operator* (int mutiplyer, NumberWithUnits& myself){
+    NumberWithUnits ariel::operator* (double mutiplyer, NumberWithUnits& myself){
         return NumberWithUnits(myself.amount*mutiplyer, myself.measure);
     }
-    

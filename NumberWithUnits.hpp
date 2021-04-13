@@ -28,6 +28,14 @@ namespace ariel{
             this->measure = newMeasure;
         }
 
+        double getAmount(){
+            return this->amount;
+        }
+
+        string getMeasure(){
+            return this->measure;
+        }
+
         static void read_units(ifstream &file);
 
         static vector<string> file_to_vector(ifstream &myfile);
@@ -74,7 +82,7 @@ namespace ariel{
 
         const NumberWithUnits& operator --(int);
 
-        friend NumberWithUnits operator* (int mutiplyer, NumberWithUnits& myself);
+        friend NumberWithUnits operator* (double mutiplyer, NumberWithUnits& myself);
 
         double convertWithoutChanging(pair<string, double> mine, pair<string, double> his, unsigned int lineNum);
     };
