@@ -46,11 +46,7 @@ namespace ariel{
 
         NumberWithUnits operator+ () const;
 
-        unsigned int searchSameMessure(string myMeasure, string otherMesure);
-
-        double addAmount(pair<string, double> mine, pair<string, double> his, unsigned int lineNum);
-
-        double subAmount(pair<string, double> mine, pair<string, double> his, unsigned int lineNum);
+        static unsigned int searchSameMessure(const string& myMeasure, const string&  otherMesure);
 
         NumberWithUnits& operator+=(const NumberWithUnits& other);
 
@@ -73,7 +69,7 @@ namespace ariel{
         bool operator > (const NumberWithUnits& other);
             
         bool operator < (const NumberWithUnits& other);
-
+        
         NumberWithUnits& operator ++();
 
         const NumberWithUnits& operator ++(int);
@@ -84,7 +80,7 @@ namespace ariel{
 
         friend NumberWithUnits operator* (double mutiplyer, NumberWithUnits& myself);
 
-        double convertWithoutChanging(pair<string, double> mine, pair<string, double> his, unsigned int lineNum);
+        static double convertWithoutChanging(const pair<string, double>& mine, const pair<string, double>& his, const unsigned int& lineNum);
     };
 }
 

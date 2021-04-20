@@ -10,26 +10,26 @@ using namespace std;
 #include "NumberWithUnits.hpp"
 using namespace ariel;
 
-    static vector<vector<string>> mesurementTypes;
-    static vector<vector<pair<string, double>>> convertion;
+    static vector<vector<string>> mesurementTypes;  // These two 2d vectors are helping for checking if the measuermnets are for the sane type  
+    static vector<vector<pair<string, double>>> convertion; // and for normilization of the amount of each measure 
 
-    vector<string> ariel::NumberWithUnits::file_to_vector(ifstream &myfile){
-        vector<string> output;
+    vector<string> ariel::NumberWithUnits::file_to_vector(ifstream &myfile){ // Convert the file line into vectors of strings and replace the third line with fourth 
+        vector<string> output;                                               // for the biggest measuremnt to the smallest of each type
         string line;
         string tmpLine;
         unsigned int counter = 0;
         while(getline(myfile,line)){
-            if(counter == 2){
+            if(counter == 3){ // temporary variable for the third line to insert after we insert the fourth line 
                 tmpLine = line;
             }
             
-            else if(counter == 3){
+            else if(counter == 4){ // Insert the fourth line and then the third 
                 output.push_back(line);
                 output.push_back(tmpLine);
             }
 
             else{    
-                output.push_back(line);
+                output.push_back(line); // else we just push the line to the vector 
             }
                 
             counter++;
@@ -41,14 +41,14 @@ using namespace ariel;
 
     void ariel::NumberWithUnits::read_units(ifstream& myfile){
         string line;
-        string left= "";
-        string right = "";
+        string left;
+        string right;
         bool first = true;
         if (myfile.is_open()){
-            vector<string> file =  file_to_vector(myfile);
-            vector<string> mesurements;
-            vector<pair<string, double>> convert;
-            for(unsigned int i = 0; i < file.size(); i++){
+            vector<string> file =  file_to_vector(myfile); 
+            vector<string> mesurements;// Temporary vector such that we will inesrt it to mesurementTypes when we finish to pass on every measurment of the same type
+            vector<pair<string, double>> convert; // The same as mesurements but we insert it into convertion
+            for(unsigned int i = 0; i < file.size(); i++){ // For each line we'll divide him to left and right and  for both sides we slice it to amount the measuremnt type 
                 line = file.at(i);
                 unsigned int divid = line.find('=');
                 left = line.substr(0, divid-1);
@@ -57,7 +57,7 @@ using namespace ariel;
                 unsigned int leftDivid = left.find(' ');
                 unsigned int rightDivid = right.find(' ');
 
-                double leftAmout = stod(left.substr(0, leftDivid));
+                double leftAmout = stod(left.substr(0, leftDivid)); // stod stand for convert strimg into double
                 double rightAmout = stod(right.substr(0, rightDivid));
                 string leftMeasure = left.substr(leftDivid+1, left.length()-1);
                 string rightMeasure = right.substr(rightDivid+1, right.length()-1);
@@ -68,11 +68,12 @@ using namespace ariel;
                 double multi = 1;
                 if(find(mesurements.begin(), mesurements.end(), leftMeasure)!= mesurements.end()){
                     mesurements.push_back(rightMeasure);
-                    for(unsigned int j = 0; j < convert.size(); j++){
-                        multi *= convert.at(j).second;
-                    }
+                    multi *= convert.at(convert.size()-1).second;
                     rightEntry.second *= multi;
-                    convert.push_back(rightEntry);     
+                    convert.push_back(rightEntry);   
+                    for(unsigned int j = 0; j < convert.size(); j++){ 
+                        cout << convert.at(j).first << " " << convert.at(j).second << ", ";
+                    }  
                 }
 
                 else{
@@ -87,22 +88,25 @@ using namespace ariel;
                     first = false;
                     mesurements.push_back(leftMeasure);
                     mesurements.push_back(rightMeasure);
-                    
                     convert.push_back(leftEntry);
                     convert.push_back(rightEntry);
-                    if(i+1 == file.size()){
+                }
+
+                if(i+1 == file.size()){
                         mesurementTypes.push_back(mesurements);
                         convertion.push_back(convert);
                         mesurements.clear();
                         convert.clear();
-                    }
                 } 
             }
         }
-        myfile.close();
-    }
 
-    ariel::NumberWithUnits::NumberWithUnits(const double& givenamount, const string& mesurment):
+        myfile.close();
+
+    }     
+    
+
+    ariel::NumberWithUnits::NumberWithUnits(const double& givenamount, const string& mesurment):// Constructor
         amount(givenamount), measure(mesurment){}
 
 
@@ -115,30 +119,30 @@ using namespace ariel;
         string amo;
         string meas;
         string tmp;
-        is >> amo >> tmp >> meas;
+        is >> amo >> tmp >> meas; // Because the input is 700 [ kg ] we will insert [ into tmp
         myself.amount = stod(amo);
         myself.measure = meas;
         return is;
     }
 
-    NumberWithUnits ariel::NumberWithUnits::operator+() const{
+    NumberWithUnits ariel::NumberWithUnits::operator+() const{ // Return out itself
         return NumberWithUnits(amount, measure);
     }
 
-    unsigned int ariel::NumberWithUnits::searchSameMessure(string myMeasure, string otherMesure){
+    unsigned int ariel::NumberWithUnits::searchSameMessure(const string& myMeasure, const string& otherMesure){ // Check if we can convert the two measuremnts 
         for(unsigned int i = 0; i < mesurementTypes.size(); i++){
-            bool mine = find(mesurementTypes.at(i).begin(), mesurementTypes.at(i).end(), myMeasure) != mesurementTypes.at(i).end();
-            bool his = find(mesurementTypes.at(i).begin(), mesurementTypes.at(i).end(), otherMesure) != mesurementTypes.at(i).end();
-                    
-            if(mine && his){
+            bool mine = find(mesurementTypes.at(i).begin(), mesurementTypes.at(i).end(), myMeasure) != mesurementTypes.at(i).end(); // Search mine measure 
+            bool his = find(mesurementTypes.at(i).begin(), mesurementTypes.at(i).end(), otherMesure) != mesurementTypes.at(i).end(); // Search for his measure
+
+            if(mine && his){ // If the computer found the measuremnts in the same vector than it will return the vector index in the 2d vector
                 return i;
             }
-
-            else if(((mine && !his) || (!mine && his))){
-                throw std::invalid_argument("Units do not match - [" + otherMesure + "] cannot be converted to ["+myMeasure+"]");
+            
+            if(((mine && !his) || (!mine && his))){ // If he found one measurment but the second didn't find than return excption
+                throw std::invalid_argument("Units do not match - [" + otherMesure + "] cannot be converted to [" + myMeasure + "]");
             }
 
-            else if(i+1 == mesurementTypes.size()){
+            if(i+1 == mesurementTypes.size()){ // If we didn't find any measuremnt of the two that the function got
                 throw std::invalid_argument("One of the two units are not valid at all");
                 
             }
@@ -147,12 +151,13 @@ using namespace ariel;
         return 0;                      
     }
 
-    double ariel::NumberWithUnits::addAmount(pair<string, double> mine, pair<string, double> his, unsigned int lineNum){
+    double ariel::NumberWithUnits::convertWithoutChanging(const pair<string, double>& mine, const pair<string, double>& his, const unsigned int& lineNum){ // This function change his amount accordint to mine (this) and his measurmnets types 
         
-        unsigned int myIndex;
-        unsigned int hisIndex;
+        unsigned int myIndex = 0;
+        unsigned int hisIndex = 0;
+        double output = 0;
 
-        for(unsigned int i = 0; i < convertion.at(lineNum).size(); i++){
+        for(unsigned int i = 0; i < convertion.at(lineNum).size(); i++){// search for our measurments in the index that searchSameMessure return 
             if(convertion.at(lineNum).at(i).first == mine.first){
                myIndex = i; 
             }
@@ -161,60 +166,12 @@ using namespace ariel;
                hisIndex = i; 
             }
         }
-
-        mine.second += (his.second * convertion.at(lineNum).at(myIndex).second) / convertion.at(lineNum).at(hisIndex).second;
-        
-
-        return mine.second;
-    }
-
-    double ariel::NumberWithUnits::subAmount(pair<string, double> mine, pair<string, double> his, unsigned int lineNum){
-        
-        unsigned int myIndex;
-        unsigned int hisIndex;
-
-        for(unsigned int i = 0; i < convertion.at(lineNum).size(); i++){
-            if(convertion.at(lineNum).at(i).first == mine.first){
-               myIndex = i; 
-            }
-
-            if(convertion.at(lineNum).at(i).first == his.first){
-               hisIndex = i; 
-            }
-        }
-        
-        mine.second -= (his.second * convertion.at(lineNum).at(myIndex).second) / convertion.at(lineNum).at(hisIndex).second;
-        
-
-        return mine.second;
-    }
-
-
-    double ariel::NumberWithUnits::convertWithoutChanging(pair<string, double> mine, pair<string, double> his, unsigned int lineNum){
-        
-        unsigned int myIndex;
-        unsigned int hisIndex;
-        double output;
-
-        for(unsigned int i = 0; i < convertion.at(lineNum).size(); i++){
-            if(convertion.at(lineNum).at(i).first == mine.first){
-               myIndex = i; 
-            }
-
-            if(convertion.at(lineNum).at(i).first == his.first){
-               hisIndex = i; 
-            }
-        }
-
-        output = (his.second * convertion.at(lineNum).at(myIndex).second) / convertion.at(lineNum).at(hisIndex).second;
+        double myMeasure = convertion.at(lineNum).at(myIndex).second;
+        double hisMeasure = convertion.at(lineNum).at(hisIndex).second;
+        output = (his.second * myMeasure) / hisMeasure; // Calculate the normalization
 
         return output;
     }
-
-
-
-
-
 
     NumberWithUnits& ariel::NumberWithUnits::operator+= (const NumberWithUnits& other){
         if(other.measure == this->measure){
@@ -227,7 +184,7 @@ using namespace ariel;
             unsigned int lineNum = searchSameMessure(mine.first, his.first);
 
             if(lineNum >= 0){
-                this->amount = addAmount(mine, his, lineNum);
+                this->amount += convertWithoutChanging(mine, his, lineNum);
 
             }
         }
@@ -237,9 +194,10 @@ using namespace ariel;
     }
 
     NumberWithUnits ariel::NumberWithUnits::operator+ (const NumberWithUnits& other){
-        double tmp;
+        double tmp = 0;
+        bool same = false;
         if(this->measure == other.measure){
-            return NumberWithUnits(this->amount + other.amount, measure); 
+            same = true;
         }
 
 
@@ -249,11 +207,15 @@ using namespace ariel;
             unsigned int lineNum = searchSameMessure(mine.first, his.first);
 
             if(lineNum >= 0){
-                tmp = addAmount(mine, his, lineNum);
+                tmp = convertWithoutChanging(mine, his, lineNum);
             }
         }
     
-        return NumberWithUnits(tmp, measure); 
+        if(same){
+            return NumberWithUnits(this->amount + other.amount, measure);
+        }
+        
+        return NumberWithUnits(this->amount+tmp, measure); 
     }
 
     NumberWithUnits ariel::NumberWithUnits::operator-() const{
@@ -264,7 +226,7 @@ using namespace ariel;
 
     NumberWithUnits& ariel::NumberWithUnits::operator -= (const NumberWithUnits& other){
         if(other.measure == this->measure){
-            this->amount += other.amount; 
+            this->amount -= other.amount; 
         }
 
         else{
@@ -273,7 +235,7 @@ using namespace ariel;
             unsigned int lineNum = searchSameMessure(mine.first, his.first);
 
             if(lineNum >= 0){
-                this->amount = subAmount(mine, his, lineNum);
+                this->amount -= convertWithoutChanging(mine, his, lineNum);
             }
         }
 
@@ -283,9 +245,10 @@ using namespace ariel;
     
 
     NumberWithUnits ariel::NumberWithUnits::operator - (const NumberWithUnits& other){
-        double tmp;
+        double tmp = 0;
+        bool same = false;
         if(this->measure == other.measure){
-            return NumberWithUnits(this->amount - other.amount, measure); 
+            same = true;
         }
 
 
@@ -295,11 +258,15 @@ using namespace ariel;
             unsigned int lineNum = searchSameMessure(mine.first, his.first);
 
             if(lineNum >= 0){
-                tmp = subAmount(mine, his, lineNum);
+                tmp = convertWithoutChanging(mine, his, lineNum);
             }
         }
     
-        return NumberWithUnits(tmp, measure); 
+        if(same){
+            return NumberWithUnits(this->amount - other.amount, measure);
+        }
+        
+        return NumberWithUnits(this->amount - tmp, measure); 
     }
 
 
@@ -444,10 +411,6 @@ using namespace ariel;
 
                 if(this->amount < checking){
                     return true;
-                }
-
-                else{
-                    return false; 
                 }
             }
         }

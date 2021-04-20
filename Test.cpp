@@ -48,8 +48,8 @@ TEST_CASE("some normal test") {
     CHECK(c2.getAmount() == 500+1000/3.33);
     CHECK(d2.getAmount() == 500-1000/3.33);
     CHECK(e2.getAmount() == 1250);
-    CHECK(f2.getAmount() == 2665.0);
-    CHECK(g2.getAmount() == -665.0);
+    CHECK(f2.getAmount() == 1000+3.33*500);
+    CHECK(g2.getAmount() == 1000-3.33*500);
     CHECK(h2.getAmount() == 250);
 
     istringstream sample_input3{"4 [ hour ]"};
